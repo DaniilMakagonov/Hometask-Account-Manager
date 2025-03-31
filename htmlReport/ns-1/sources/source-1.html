@@ -1,0 +1,209 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=windows-1251"> 
+  <title>Coverage Report > Account</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">ru.hse</a>
+</div>
+
+<h1>Coverage Summary for Class: Account (ru.hse)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">Account</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (8/8)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (53/53)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package ru.hse;
+&nbsp;
+&nbsp;@SuppressWarnings(&quot;LocalVariableUsedAndDeclaredInDifferentSwitchBranches&quot;)
+<b class="fc">&nbsp;public class Account {</b>
+&nbsp;    protected IServerConnection serverConnection;
+&nbsp;    protected String login;
+&nbsp;    protected Long activeSession;
+&nbsp;
+&nbsp;    public String getLogin() {
+<b class="fc">&nbsp;        return login;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public Long getActiveSession() {
+<b class="fc">&nbsp;        return activeSession;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    protected LocalOperationResponse callLogin(IServerConnection serverConnection, String login, String password) {
+<b class="fc">&nbsp;        this.serverConnection = serverConnection;</b>
+<b class="fc">&nbsp;        ServerResponse response = serverConnection.login(login, password);</b>
+<b class="fc">&nbsp;        switch (response.code) {</b>
+&nbsp;            case ServerResponse.ALREADY_LOGGED:
+<b class="fc">&nbsp;                return LocalOperationResponse.ACCOUNT_MANAGER_RESPONSE;</b>
+&nbsp;            case ServerResponse.NO_USER_INCORRECT_PASSWORD:
+<b class="fc">&nbsp;                return LocalOperationResponse.NO_USER_INCORRECT_PASSWORD_RESPONSE;</b>
+&nbsp;            case ServerResponse.SUCCESS: {
+<b class="fc">&nbsp;                Object answer = response.data;</b>
+<b class="fc">&nbsp;                if (answer instanceof Long) {</b>
+<b class="fc">&nbsp;                    activeSession = (Long) answer;</b>
+<b class="fc">&nbsp;                    this.login = login;</b>
+<b class="fc">&nbsp;                    return new LocalOperationResponse(LocalOperationResponse.SUCCEED, answer);</b>
+&nbsp;                }
+<b class="fc">&nbsp;                return new LocalOperationResponse(LocalOperationResponse.ENCODING_ERROR, response);</b>
+&nbsp;            }
+&nbsp;        }
+<b class="fc">&nbsp;        return new LocalOperationResponse(LocalOperationResponse.UNDEFINED_ERROR, response);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    protected LocalOperationResponse callLogout() {
+<b class="fc">&nbsp;        if (activeSession == null)</b>
+<b class="fc">&nbsp;            return LocalOperationResponse.INCORRECT_SESSION_RESPONSE;</b>
+<b class="fc">&nbsp;        ServerResponse response = serverConnection.logout(activeSession);</b>
+<b class="fc">&nbsp;        switch (response.code) {</b>
+&nbsp;            case ServerResponse.NOT_LOGGED:
+<b class="fc">&nbsp;                return LocalOperationResponse.NOT_LOGGED_RESPONSE;</b>
+&nbsp;            case ServerResponse.SUCCESS:
+<b class="fc">&nbsp;                activeSession = null;</b>
+<b class="fc">&nbsp;                return LocalOperationResponse.SUCCEED_RESPONSE;</b>
+&nbsp;        }
+<b class="fc">&nbsp;        return new LocalOperationResponse(LocalOperationResponse.UNDEFINED_ERROR, response);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public LocalOperationResponse withdraw(double amount) {
+<b class="fc">&nbsp;        if (activeSession == null)</b>
+<b class="fc">&nbsp;            return LocalOperationResponse.INCORRECT_SESSION_RESPONSE;</b>
+<b class="fc">&nbsp;        ServerResponse response = serverConnection.withdraw(activeSession, amount);</b>
+<b class="fc">&nbsp;        switch (response.code) {</b>
+&nbsp;            case ServerResponse.NOT_LOGGED:
+<b class="fc">&nbsp;                return LocalOperationResponse.NOT_LOGGED_RESPONSE;</b>
+&nbsp;            case ServerResponse.NO_MONEY:
+<b class="fc">&nbsp;                Object r = response.data;</b>
+<b class="fc">&nbsp;                if (r instanceof Double)</b>
+<b class="fc">&nbsp;                    return new LocalOperationResponse(LocalOperationResponse.NO_MONEY, (Double) r);</b>
+&nbsp;                break;
+&nbsp;            case ServerResponse.SUCCESS:
+<b class="fc">&nbsp;                r = response.data;</b>
+<b class="fc">&nbsp;                if (r instanceof Double)</b>
+<b class="fc">&nbsp;                    return new LocalOperationResponse(LocalOperationResponse.SUCCEED, (Double) r);</b>
+&nbsp;                break;
+&nbsp;        }
+<b class="fc">&nbsp;        return new LocalOperationResponse(LocalOperationResponse.UNDEFINED_ERROR, response);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public LocalOperationResponse deposit(double amount) {
+<b class="fc">&nbsp;        if (activeSession == null)</b>
+<b class="fc">&nbsp;            return LocalOperationResponse.INCORRECT_SESSION_RESPONSE;</b>
+<b class="fc">&nbsp;        ServerResponse response = serverConnection.deposit(activeSession, amount);</b>
+<b class="fc">&nbsp;        switch (response.code) {</b>
+&nbsp;            case ServerResponse.NOT_LOGGED:
+<b class="fc">&nbsp;                return LocalOperationResponse.NOT_LOGGED_RESPONSE;</b>
+&nbsp;            case ServerResponse.SUCCESS:
+<b class="fc">&nbsp;                Object r = response.data;</b>
+<b class="fc">&nbsp;                if (r instanceof Double)</b>
+<b class="fc">&nbsp;                    return new LocalOperationResponse(LocalOperationResponse.SUCCEED, (Double) r);</b>
+&nbsp;                break;
+&nbsp;        }
+<b class="fc">&nbsp;        return new LocalOperationResponse(LocalOperationResponse.UNDEFINED_ERROR, response);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public LocalOperationResponse getBalance() {
+<b class="fc">&nbsp;        if (activeSession == null)</b>
+<b class="fc">&nbsp;            return LocalOperationResponse.INCORRECT_SESSION_RESPONSE;</b>
+<b class="fc">&nbsp;        ServerResponse response = serverConnection.getBalance(activeSession);</b>
+<b class="fc">&nbsp;        switch (response.code) {</b>
+&nbsp;            case ServerResponse.NOT_LOGGED:
+<b class="fc">&nbsp;                return LocalOperationResponse.NOT_LOGGED_RESPONSE;</b>
+&nbsp;            case ServerResponse.SUCCESS:
+<b class="fc">&nbsp;                Object r = response.data;</b>
+<b class="fc">&nbsp;                if (r instanceof Double)</b>
+<b class="fc">&nbsp;                    return new LocalOperationResponse(LocalOperationResponse.SUCCEED, (Double) r);</b>
+&nbsp;                break;
+&nbsp;        }
+<b class="fc">&nbsp;        return new LocalOperationResponse(LocalOperationResponse.UNDEFINED_ERROR, response);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2025-03-31 18:55</div>
+</div>
+</body>
+</html>
